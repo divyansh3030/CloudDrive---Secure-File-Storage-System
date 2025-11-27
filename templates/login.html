@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: #0d0d0d;
+            font-family: Arial;
+        }
+        .box {
+            width: 330px;
+            padding: 30px;
+            border-radius: 10px;
+            background: #1c1c1c;
+            box-shadow: 0 0 20px #ff00ff55;
+            text-align: center;
+        }
+        input, button {
+            width: 90%;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 6px;
+            border: none;
+        }
+        button {
+            background: #ff00ff;
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        a {
+            color: #ff00ff;
+        }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h2 style="color:white;">Login</h2>
+
+        <form method="POST" action="/login">
+            <input type="email" name="email" placeholder="Enter Email" required>
+            <input type="password" name="password" placeholder="Enter Password" required>
+            <button type="submit">Login</button>
+        </form>
+
+        <p style="color:white;">Don’t have an account?  
+            <a href="/signup">Sign up</a>
+        </p>
+    </div>
+</body>
+</html>

@@ -1,0 +1,47 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CloudDrive - Secure File Storage</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>☁️ CloudDrive</h1>
+            <p>Secure File Storage System</p>
+        </header>
+
+        <div class="upload-section">
+            <div class="upload-box" id="dropZone">
+                <input type="file" id="fileInput" multiple hidden>
+                <div class="upload-content">
+                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="17 8 12 3 7 8"></polyline>
+                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
+                    <h3>Drop files here or click to upload</h3>
+                    <p>Supports: PDF, Images, Documents, ZIP (Max 16MB)</p>
+                </div>
+            </div>
+            <button class="btn-primary" onclick="document.getElementById('fileInput').click()">
+                Select Files
+            </button>
+        </div>
+
+        <div class="files-section">
+            <h2>Your Files</h2>
+            <div id="filesList" class="files-list">
+                <p class="loading">Loading files...</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="notification" class="notification"></div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
