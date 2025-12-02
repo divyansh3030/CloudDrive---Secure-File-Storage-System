@@ -1,5 +1,6 @@
 // static/script.js
-const API_URL = 'http://localhost:5000/api';
+const API_URL = "https://clouddrive-secure-file-storage-system.onrender.com/api";
+
 
 // Upload functionality
 const fileInput = document.getElementById('fileInput');
