@@ -22,6 +22,30 @@
             </div>
         </header>
 
+        <!-- ADD THIS STORAGE INFO HERE ⬇️ -->
+        <div class="storage-info">
+            <div class="storage-stats">
+                <div class="stat-item">
+                    <div class="stat-icon">📊</div>
+                    <div class="stat-details">
+                        <span class="stat-label">Storage Used</span>
+                        <span class="stat-value" id="storageUsed">0 MB</span>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-icon">📁</div>
+                    <div class="stat-details">
+                        <span class="stat-label">Total Files</span>
+                        <span class="stat-value" id="fileCount">0</span>
+                    </div>
+                </div>
+            </div>
+            <div class="storage-bar">
+                <div class="storage-progress" id="storageProgress" style="width: 0%"></div>
+            </div>
+            <p class="storage-limit">100 MB limit</p>
+        </div>
+
         <div class="upload-section">
             <div class="upload-box" id="dropZone">
                 <input type="file" id="fileInput" multiple hidden>
@@ -42,14 +66,35 @@
 
         <div class="files-section">
             <h2>Your Files</h2>
-            <div id="filesList" class="files-list">
-                <p class="loading">Loading files...</p>
+            
+            <!-- ADD THIS SEARCH/FILTER SECTION HERE ⬇️ -->
+            <div class="files-controls">
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="🔍 Search files..." onkeyup="searchFiles()">
+                </div>
+                <div class="filter-buttons">
+                    <button class="filter-btn active" onclick="filterFiles('all')">All</button>
+                    <button class="filter-btn" onclick="filterFiles('image')">🖼️ Images</button>
+                    <button class="filter-btn" onclick="filterFiles('pdf')">📄 PDFs</button>
+                    <button class="filter-btn" onclick="filterFiles('document')">📝 Docs</button>
+                    <button class="filter-btn" onclick="filterFiles('archive')">📦 Archives</button>
+                </div>
             </div>
-        </div>
+            
+            <div id="filesList" class="files-list">
     </div>
 
     <div id="notification" class="notification"></div>
 
     <script src="{{ url_for('static', filename='script.js') }}"></script>
+    
+    <!-- ADD PREVIEW MODAL HERE ⬇️ -->
+    <div id="previewModal" class="modal" onclick="closePreview()">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <span class="close-btn" onclick="closePreview()">&times;</span>
+            <h3 id="previewTitle">File Preview</h3>
+            <div id="previewContainer"></div>
+        </div>
+    </div>
 </body>
 </html>

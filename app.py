@@ -1,5 +1,6 @@
 # app.py - Flask Backend with AWS S3 Integration and Authentication
 from flask import Flask, request, jsonify, render_template, send_file, session, redirect, url_for
+import io  # ADD THIS LINE if not already there
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -305,6 +306,75 @@ def delete_file(key):
         return jsonify({'error': f'AWS Error: {str(e)}'}), 500
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+# File Sharing - Generate Share Link
+@app.route('/api/share/<key>', methods=['POST'])
+@login_required
+def share_file(key):
+    try:
+        # Verify file belongs to user
+        metadata = s3_client.head_object(Bucket=S3_BUCKET, Key=key)
+        if metadata['Metadata'].get('user-id') != session.get('user_id'):
+            return jsonify({'error': 'Unauthorized'}), 403
+        
+        # Generate share token
+        share_token = str(uuid.uuid4())
+        expiry_hours = request.json.get('expiry_hours', 24)
+        expiry_time = datetime.now() + timedelta(hours=expiry_hours)
+        
+        # Store share info in metadata
+        share_data = {
+            'token': share_token,
+            'key': key,
+            'filename': metadata['Metadata'].get('original-filename', key),
+            'expiry': expiry_time.isoformat(),
+            'owner_id': session.get('user_id')
+        }
+        
+        # Save to S3 as JSON
+        share_key = f'shares/{share_token}.json'
+        s3_client.put_object(
+            Bucket=S3_BUCKET,
+            Key=share_key,
+            Body=json.dumps(share_data),
+            ContentType='application/json'
+        )
+        
+        share_link = f"{request.host_url}shared/{share_token}"
+        return jsonify({'share_link': share_link, 'expiry': expiry_time.isoformat()}), 200
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+# Download Shared File
+@app.route('/shared/<token>')
+def shared_file(token):
+    try:
+        # Get share data
+        share_key = f'shares/{token}.json'
+        share_obj = s3_client.get_object(Bucket=S3_BUCKET, Key=share_key)
+        share_data = json.loads(share_obj['Body'].read().decode('utf-8'))
+        
+        # Check expiry
+        expiry_time = datetime.fromisoformat(share_data['expiry'])
+        if datetime.now() > expiry_time:
+            return "This link has expired", 410
+        
+        # Get the actual file
+        file_obj = s3_client.get_object(Bucket=S3_BUCKET, Key=share_data['key'])
+        return send_file(
+            io.BytesIO(file_obj['Body'].read()),
+            as_attachment=True,
+            download_name=share_data['filename']
+        )
+        
+    except ClientError:
+        return "Invalid or expired link", 404
+    except Exception as e:
+        return f"Error: {str(e)}", 500
+
+if __name__ == '__main__':
+    app.run(debug=True, host='0.0.0.0', port=5000)
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
