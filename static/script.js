@@ -43,7 +43,8 @@ async function uploadFile(file) {
     try {
         const response = await fetch(`${API_URL}/upload`, {
             method: 'POST',
-            body: formData
+            body: formData,
+            credentials: 'include'  // Important for sessions
         });
 
         const data = await response.json();
@@ -51,7 +52,12 @@ async function uploadFile(file) {
         if (response.ok) {
             showNotification('File uploaded successfully!', 'success');
         } else {
-            showNotification(data.error || 'Upload failed', 'error');
+            if (response.status === 401) {
+                showNotification('Session expired. Please login again.', 'error');
+                setTimeout(() => window.location.href = '/login', 2000);
+            } else {
+                showNotification(data.error || 'Upload failed', 'error');
+            }
         }
     } catch (error) {
         showNotification('Network error: ' + error.message, 'error');
@@ -60,7 +66,15 @@ async function uploadFile(file) {
 
 async function loadFiles() {
     try {
-        const response = await fetch(`${API_URL}/files`);
+        const response = await fetch(`${API_URL}/files`, {
+            credentials: 'include'  // Important for sessions
+        });
+
+        if (response.status === 401) {
+            window.location.href = '/login';
+            return;
+        }
+
         const data = await response.json();
 
         if (response.ok) {
@@ -114,12 +128,16 @@ async function deleteFile(key) {
 
     try {
         const response = await fetch(`${API_URL}/delete/${key}`, {
-            method: 'DELETE'
+            method: 'DELETE',
+            credentials: 'include'  // Important for sessions
         });
 
         if (response.ok) {
             showNotification('File deleted successfully', 'success');
             loadFiles();
+        } else if (response.status === 401) {
+            showNotification('Session expired. Please login again.', 'error');
+            setTimeout(() => window.location.href = '/login', 2000);
         } else {
             showNotification('Delete failed', 'error');
         }

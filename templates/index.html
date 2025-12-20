@@ -10,8 +10,16 @@
 <body>
     <div class="container">
         <header>
-            <h1>☁️ CloudDrive</h1>
-            <p>Secure File Storage System</p>
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+                <div>
+                    <h1>☁️ CloudDrive</h1>
+                    <p>Secure File Storage System</p>
+                </div>
+                <div style="text-align: right;">
+                    <p style="margin-bottom: 10px; color: white; font-weight: 500;">Welcome, {{ user_email }}</p>
+                    <a href="/logout" style="background: white; color: #667eea; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: bold; display: inline-block;">Logout</a>
+                </div>
+            </div>
         </header>
 
         <div class="upload-section">
