@@ -10,14 +10,14 @@
 <body>
     <div class="container">
         <header>
-            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
-                <div>
+            <div>
+                <div class="header-left">
                     <h1>☁️ CloudDrive</h1>
                     <p>Secure File Storage System</p>
                 </div>
-                <div style="text-align: right;">
-                    <p style="margin-bottom: 10px; color: white; font-weight: 500;">Welcome, {{ user_email }}</p>
-                    <a href="/logout" style="background: white; color: #667eea; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: bold; display: inline-block;">Logout</a>
+                <div class="user-info">
+                    <p>Welcome, {{ user_email }}</p>
+                    <a href="/logout" class="logout-btn">Logout</a>
                 </div>
             </div>
         </header>
@@ -26,7 +26,7 @@
             <div class="upload-box" id="dropZone">
                 <input type="file" id="fileInput" multiple hidden>
                 <div class="upload-content">
-                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                         <polyline points="17 8 12 3 7 8"></polyline>
                         <line x1="12" y1="3" x2="12" y2="15"></line>
@@ -36,7 +36,7 @@
                 </div>
             </div>
             <button class="btn-primary" onclick="document.getElementById('fileInput').click()">
-                Select Files
+                📤 Select Files
             </button>
         </div>
 

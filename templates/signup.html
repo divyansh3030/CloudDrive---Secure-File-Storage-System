@@ -10,106 +10,276 @@
             padding: 0;
             box-sizing: border-box;
         }
+        
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
             padding: 20px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            position: relative;
+            overflow: hidden;
         }
-        .auth-box {
-            background: white;
+        
+        /* Animated background shapes */
+        body::before {
+            content: '';
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            top: -300px;
+            left: -300px;
+            opacity: 0.4;
+            animation: pulse 4s ease-in-out infinite;
+        }
+        
+        body::after {
+            content: '';
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            background: linear-gradient(45deg, #4facfe 0%, #00f2fe 100%);
+            border-radius: 50%;
+            bottom: -250px;
+            right: -250px;
+            opacity: 0.4;
+            animation: pulse 6s ease-in-out infinite reverse;
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.1);
+            }
+        }
+        
+        .auth-container {
+            position: relative;
+            z-index: 1;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
             width: 100%;
-            max-width: 400px;
-            padding: 40px;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            max-width: 450px;
+            padding: 50px 40px;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.5s ease-out;
         }
-        .auth-box h2 {
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .logo {
             text-align: center;
-            color: #333;
-            margin-bottom: 30px;
-            font-size: 2rem;
+            margin-bottom: 40px;
         }
+        
+        .logo h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+        
+        .logo p {
+            color: #666;
+            font-size: 0.95rem;
+        }
+        
+        .error {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+            color: white;
+            padding: 14px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            text-align: center;
+            font-size: 0.9rem;
+            animation: shake 0.5s;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+        
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 24px;
         }
+        
         .form-group label {
             display: block;
-            color: #555;
-            margin-bottom: 8px;
-            font-weight: 500;
+            color: #333;
+            margin-bottom: 10px;
+            font-weight: 600;
+            font-size: 0.9rem;
         }
+        
+        .input-wrapper {
+            position: relative;
+        }
+        
         .form-group input {
             width: 100%;
-            padding: 12px;
+            padding: 14px 16px;
             border: 2px solid #e0e0e0;
-            border-radius: 6px;
+            border-radius: 12px;
             font-size: 1rem;
-            transition: border 0.3s;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
         }
+        
         .form-group input:focus {
             outline: none;
-            border-color: #667eea;
-        }
-        .btn-submit {
-            width: 100%;
-            padding: 14px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 1rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-        .btn-submit:hover {
+            border-color: #f093fb;
+            background: white;
+            box-shadow: 0 4px 12px rgba(240, 147, 251, 0.2);
             transform: translateY(-2px);
         }
+        
+        .password-hint {
+            font-size: 0.8rem;
+            color: #888;
+            margin-top: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .password-hint::before {
+            content: 'ℹ️';
+            font-size: 0.9rem;
+        }
+        
+        .btn-submit {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.05rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(240, 147, 251, 0.4);
+            margin-top: 10px;
+        }
+        
+        .btn-submit:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(240, 147, 251, 0.6);
+        }
+        
+        .btn-submit:active {
+            transform: translateY(-1px);
+        }
+        
+        .divider {
+            text-align: center;
+            margin: 30px 0;
+            position: relative;
+        }
+        
+        .divider::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #ddd, transparent);
+        }
+        
+        .divider span {
+            background: white;
+            padding: 0 20px;
+            color: #999;
+            font-size: 0.85rem;
+            position: relative;
+            z-index: 1;
+        }
+        
         .auth-link {
             text-align: center;
-            margin-top: 20px;
             color: #666;
+            font-size: 0.95rem;
         }
+        
         .auth-link a {
-            color: #667eea;
+            color: #f093fb;
             text-decoration: none;
             font-weight: 600;
+            transition: all 0.3s ease;
         }
+        
         .auth-link a:hover {
+            color: #f5576c;
             text-decoration: underline;
         }
-        .error {
-            background: #fee;
-            color: #c33;
-            padding: 12px;
-            border-radius: 6px;
-            margin-bottom: 20px;
-            text-align: center;
-            border: 1px solid #fcc;
+        
+        /* Floating stars */
+        .star {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+            animation: twinkle 2s infinite;
         }
-        .success {
-            background: #efe;
-            color: #3c3;
-            padding: 12px;
-            border-radius: 6px;
-            margin-bottom: 20px;
-            text-align: center;
-            border: 1px solid #cfc;
+        
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
         }
-        .password-hint {
-            font-size: 0.85rem;
-            color: #888;
-            margin-top: 5px;
+        
+        .star:nth-child(1) { top: 10%; left: 15%; animation-delay: 0s; }
+        .star:nth-child(2) { top: 20%; right: 20%; animation-delay: 0.3s; }
+        .star:nth-child(3) { top: 60%; left: 10%; animation-delay: 0.6s; }
+        .star:nth-child(4) { top: 80%; right: 15%; animation-delay: 0.9s; }
+        .star:nth-child(5) { top: 40%; left: 25%; animation-delay: 1.2s; }
+        .star:nth-child(6) { top: 70%; right: 30%; animation-delay: 1.5s; }
+        
+        @media (max-width: 500px) {
+            .auth-container {
+                padding: 40px 30px;
+            }
+            .logo h1 {
+                font-size: 2rem;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="auth-box">
-        <h2>☁️ Create Account</h2>
+    <div class="star"></div>
+    <div class="star"></div>
+    <div class="star"></div>
+    <div class="star"></div>
+    <div class="star"></div>
+    <div class="star"></div>
+    
+    <div class="auth-container">
+        <div class="logo">
+            <h1>☁️ CloudDrive</h1>
+            <p>Join thousands of users storing securely</p>
+        </div>
         
         {% if error %}
         <div class="error">{{ error }}</div>
@@ -118,20 +288,28 @@
         <form method="POST" action="/signup">
             <div class="form-group">
                 <label>Email Address</label>
-                <input type="email" name="email" placeholder="Enter your email" required>
+                <div class="input-wrapper">
+                    <input type="email" name="email" placeholder="Enter your email" required>
+                </div>
             </div>
             
             <div class="form-group">
                 <label>Password</label>
-                <input type="password" name="password" placeholder="Create a password" required minlength="6">
-                <div class="password-hint">Must be at least 6 characters</div>
+                <div class="input-wrapper">
+                    <input type="password" name="password" placeholder="Create a strong password" required minlength="6">
+                </div>
+                <div class="password-hint">Minimum 6 characters required</div>
             </div>
             
             <button type="submit" class="btn-submit">Create Account</button>
         </form>
         
+        <div class="divider">
+            <span>or</span>
+        </div>
+        
         <p class="auth-link">
-            Already have an account? <a href="/login">Login</a>
+            Already have an account? <a href="/login">Sign In</a>
         </p>
     </div>
 </body>
