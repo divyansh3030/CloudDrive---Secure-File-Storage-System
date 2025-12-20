@@ -8,6 +8,8 @@ import boto3
 from botocore.exceptions import ClientError
 import os
 from datetime import datetime
+from datetime import timedelta
+
 import hashlib
 import uuid
 from dotenv import load_dotenv
@@ -372,9 +374,6 @@ def shared_file(token):
         return "Invalid or expired link", 404
     except Exception as e:
         return f"Error: {str(e)}", 500
-
-if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)

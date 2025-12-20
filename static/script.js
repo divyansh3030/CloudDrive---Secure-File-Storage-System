@@ -265,7 +265,7 @@ function updateStorageDisplay() {
     const totalSize = allFiles.reduce((sum, file) => sum + file.size, 0);
     const totalSizeMB = (totalSize / (1024 * 1024)).toFixed(2);
     const fileCount = allFiles.length;
-    const limitMB = 100;
+    const limitMB = 200;
     const percentage = Math.min((totalSizeMB / limitMB) * 100, 100);
     
     document.getElementById('storageUsed').textContent = `${totalSizeMB} MB`;
