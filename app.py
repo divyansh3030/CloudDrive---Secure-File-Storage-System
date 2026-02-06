@@ -1,6 +1,7 @@
 # app.py - Flask Backend with AWS S3 Integration and Authentication
 from flask import Flask, request, jsonify, render_template, send_file, session, redirect, url_for
 import io  # ADD THIS LINE if not already there
+from flask_mail import Mail, Message  # ADD this line
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -20,6 +21,16 @@ load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'supersecretkey123')
+
+# Email Configuration (ADD these lines)
+app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
+app.config['MAIL_PORT'] = int(os.environ.get('MAIL_PORT', 587))
+app.config['MAIL_USE_TLS'] = os.environ.get('MAIL_USE_TLS', 'True') == 'True'
+app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME')
+app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
+app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_DEFAULT_SENDER')
+
+mail = Mail(app)  # ADD this
 
 # Session configuration for production
 app.config['SESSION_COOKIE_SECURE'] = True  # Only send cookies over HTTPS
@@ -63,6 +74,7 @@ MAX_FILE_SIZE = 16 * 1024 * 1024  # 16MB
 
 # User storage in S3
 USERS_FILE_KEY = 'app-data/users.json'
+RESET_TOKENS_KEY = 'app-data/reset-tokens.json'  # ADD this line
 
 def load_users():
     """Load users from S3"""
@@ -86,6 +98,29 @@ def save_users(users):
         )
     except Exception as e:
         print(f"Error saving users: {e}")
+
+def load_reset_tokens():
+    """Load reset tokens from S3"""
+    try:
+        response = s3_client.get_object(Bucket=S3_BUCKET, Key=RESET_TOKENS_KEY)
+        return json.loads(response['Body'].read().decode('utf-8'))
+    except ClientError:
+        return {}
+    except Exception as e:
+        print(f"Error loading reset tokens: {e}")
+        return {}
+
+def save_reset_tokens(tokens):
+    """Save reset tokens to S3"""
+    try:
+        s3_client.put_object(
+            Bucket=S3_BUCKET,
+            Key=RESET_TOKENS_KEY,
+            Body=json.dumps(tokens, indent=4),
+            ContentType='application/json'
+        )
+    except Exception as e:
+        print(f"Error saving reset tokens: {e}")
 
 def login_required(f):
     """Decorator to check if user is logged in"""
@@ -176,6 +211,174 @@ def signup():
 def logout():
     session.clear()
     return redirect(url_for('login_page'))
+
+# ==================== PASSWORD RESET ROUTES ====================
+
+@app.route('/forgot-password')
+def forgot_password_page():
+    """Display forgot password page"""
+    if 'user_email' in session:
+        return redirect(url_for('index'))
+    return render_template('forgot_password.html')
+
+@app.route('/forgot-password', methods=['POST'])
+def forgot_password():
+    """Handle password reset request"""
+    try:
+        email = request.form.get('email')
+        
+        if not email:
+            return render_template('forgot_password.html', error='Please provide your email')
+        
+        users = load_users()
+        
+        if email not in users:
+            return render_template('forgot_password.html', 
+                success='If an account exists with this email, you will receive a password reset link.')
+        
+        # Generate reset token
+        reset_token = str(uuid.uuid4())
+        expiry_time = datetime.now() + timedelta(hours=1)
+        
+        # Store token
+        tokens = load_reset_tokens()
+        tokens[reset_token] = {
+            'email': email,
+            'expiry': expiry_time.isoformat(),
+            'used': False
+        }
+        save_reset_tokens(tokens)
+        
+        # Send email
+        reset_link = f"{request.host_url}reset-password/{reset_token}"
+        
+        msg = Message(
+            subject='CloudDrive - Password Reset Request',
+            recipients=[email]
+        )
+        msg.html = f"""
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2 style="color: #667eea;">CloudDrive Password Reset</h2>
+            <p>Hi there,</p>
+            <p>You recently requested to reset your password for your CloudDrive account.</p>
+            <p>Click the button below to reset your password:</p>
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="{reset_link}" 
+                   style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                          color: white;
+                          padding: 12px 30px;
+                          text-decoration: none;
+                          border-radius: 8px;
+                          display: inline-block;
+                          font-weight: bold;">
+                    Reset Password
+                </a>
+            </div>
+            <p>Or copy and paste this link into your browser:</p>
+            <p style="background: #f5f5f5; padding: 10px; border-radius: 5px; word-break: break-all;">
+                {reset_link}
+            </p>
+            <p style="color: #666; font-size: 0.9em;">
+                This link will expire in 1 hour.
+            </p>
+            <p style="color: #666; font-size: 0.9em;">
+                If you didn't request a password reset, you can safely ignore this email.
+            </p>
+            <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;">
+            <p style="color: #999; font-size: 0.8em;">
+                CloudDrive - Secure File Storage System
+            </p>
+        </div>
+        """
+        
+        mail.send(msg)
+        
+        return render_template('forgot_password.html', 
+            success='If an account exists with this email, you will receive a password reset link.')
+        
+    except Exception as e:
+        print(f"Error in forgot_password: {e}")
+        return render_template('forgot_password.html', 
+            error='An error occurred. Please try again later.')
+
+@app.route('/reset-password/<token>')
+def reset_password_page(token):
+    """Display reset password page"""
+    if 'user_email' in session:
+        return redirect(url_for('index'))
+    
+    tokens = load_reset_tokens()
+    
+    if token not in tokens:
+        return render_template('reset_password.html', error='Invalid or expired reset link')
+    
+    token_data = tokens[token]
+    
+    expiry_time = datetime.fromisoformat(token_data['expiry'])
+    if datetime.now() > expiry_time:
+        return render_template('reset_password.html', error='This reset link has expired')
+    
+    if token_data.get('used', False):
+        return render_template('reset_password.html', error='This reset link has already been used')
+    
+    return render_template('reset_password.html', token=token)
+
+@app.route('/reset-password/<token>', methods=['POST'])
+def reset_password(token):
+    """Handle password reset"""
+    try:
+        new_password = request.form.get('password')
+        confirm_password = request.form.get('confirm_password')
+        
+        if not new_password or not confirm_password:
+            return render_template('reset_password.html', token=token, 
+                error='Please provide both password fields')
+        
+        if new_password != confirm_password:
+            return render_template('reset_password.html', token=token,
+                error='Passwords do not match')
+        
+        if len(new_password) < 6:
+            return render_template('reset_password.html', token=token,
+                error='Password must be at least 6 characters')
+        
+        tokens = load_reset_tokens()
+        
+        if token not in tokens:
+            return render_template('reset_password.html', token=token,
+                error='Invalid or expired reset link')
+        
+        token_data = tokens[token]
+        
+        expiry_time = datetime.fromisoformat(token_data['expiry'])
+        if datetime.now() > expiry_time:
+            return render_template('reset_password.html', token=token,
+                error='This reset link has expired')
+        
+        if token_data.get('used', False):
+            return render_template('reset_password.html', token=token,
+                error='This reset link has already been used')
+        
+        email = token_data['email']
+        users = load_users()
+        
+        if email not in users:
+            return render_template('reset_password.html', token=token,
+                error='User account not found')
+        
+        users[email]['password'] = generate_password_hash(new_password)
+        save_users(users)
+        
+        tokens[token]['used'] = True
+        save_reset_tokens(tokens)
+        
+        return render_template('reset_password.html', 
+            success='Password reset successful! You can now login with your new password.')
+        
+    except Exception as e:
+        print(f"Error in reset_password: {e}")
+        return render_template('reset_password.html', token=token,
+            error='An error occurred. Please try again.')
 
 # ==================== FILE MANAGEMENT ROUTES ====================
 
