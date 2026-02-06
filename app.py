@@ -250,6 +250,7 @@ def forgot_password():
         save_reset_tokens(tokens)
         
         # Send email
+        base_url = os.environ.get("BASE_URL", request.host_url.rstrip("/"))
         reset_link = f"{request.host_url}reset-password/{reset_token}"
         
         msg = Message(
