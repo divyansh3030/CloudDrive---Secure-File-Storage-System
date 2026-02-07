@@ -22,6 +22,13 @@ load_dotenv()
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'supersecretkey123')
 
+# ==================== HEALTH CHECK ROUTE ====================
+
+@app.route("/health")
+def health():
+    return "OK", 200
+
+
 # Email Configuration (ADD these lines)
 app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
 app.config['MAIL_PORT'] = int(os.environ.get('MAIL_PORT', 587))
@@ -384,9 +391,11 @@ def reset_password(token):
 # ==================== FILE MANAGEMENT ROUTES ====================
 
 @app.route('/')
-@login_required
 def index():
+    if 'user_email' not in session:
+        return redirect(url_for('login_page'))
     return render_template('index.html', user_email=session.get('user_email'))
+
 
 @app.route('/api/upload', methods=['POST'])
 @login_required
